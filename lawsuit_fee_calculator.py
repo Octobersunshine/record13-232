@@ -1,5 +1,12 @@
+import base64
+import io
+import os
+import uuid
+from datetime import datetime
 from enum import Enum
 from typing import List, Tuple, Dict, Optional, Any
+
+import qrcode
 
 
 PROPERTY_BRACKETS: List[Tuple[float, float]] = [
@@ -506,6 +513,466 @@ def main() -> None:
             print()
             print(format_result(result))
             print()
+        except ValueError as e:
+            print(f'输入错误：{e}')
+        except (KeyboardInterrupt, EOFError):
+            print('\n再见。')
+            break
+
+
+def _generate_payment_no() -> str:
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    suffix = uuid.uuid4().hex[:6].upper()
+    return f'FY{timestamp}{suffix}'
+
+
+def _generate_qr_base64(data: str) -> str:
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=8,
+        border=2,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color='#1a365d', back_color='white')
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    img_bytes = buf.getvalue()
+    return base64.b64encode(img_bytes).decode('ascii')
+
+
+def _build_qr_payload(
+    payment_no: str,
+    fee_yuan: float,
+    case_type_label: str,
+    amount_wan: float,
+) -> str:
+    payload = (
+        f'诉讼费缴费通知|单号:{payment_no}|'
+        f'金额:{fee_yuan:.2f}元|类型:{case_type_label}|'
+        f'标的:{amount_wan:.2f}万|'
+        f'生成时间:{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+    )
+    return payload
+
+
+def _render_html_notice(
+    *,
+    payment_no: str,
+    case_type_label: str,
+    amount_wan: float,
+    fee_yuan: float,
+    breakdown: List[Dict[str, Any]],
+    notes: List[str],
+    qr_b64: str,
+    payee: str = '当地人民法院诉讼费专户',
+    bank: str = '中国工商银行 XX 支行',
+    account: str = '1234 5678 9012 3456',
+) -> str:
+    amount_yuan = amount_wan * 10000.0
+    fee_wan = fee_yuan / 10000.0
+    now_str = datetime.now().strftime('%Y 年 %m 月 %d 日')
+    due_str = datetime.now().strftime('%Y 年 %m 月 %d 日起 7 日内')
+
+    breakdown_rows = ''
+    for idx, item in enumerate(breakdown, 1):
+        base = f"{item['base']:.2f}" if item['base'] > 0 else '-'
+        upper = f"{item['upper']:.2f}" if item['upper'] > 0 else '-'
+        breakdown_rows += f'''
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">{idx}</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: left;">{item['range']}</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">{base} ~ {upper}</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">{item['rate']}</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: right;">¥ {item['portion']:.2f}</td>
+        </tr>'''
+
+    notes_html = ''
+    if notes:
+        notes_html = '<div style="margin-top: 16px;"><strong style="color: #1f2937;">说明：</strong><ul style="margin: 8px 0 0 20px; padding: 0; color: #374151; font-size: 13px; line-height: 1.6;">'
+        for note in notes:
+            notes_html += f'<li>{note}</li>'
+        notes_html += '</ul></div>'
+
+    amount_display = f'{amount_wan:.2f} 万元（¥ {amount_yuan:.2f} 元）' if amount_wan > 0 else '无'
+
+    html = f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>诉讼费缴费通知单 - {payment_no}</title>
+<style>
+    @page {{ size: A4; margin: 15mm; }}
+    body {{
+        font-family: "Microsoft YaHei", "SimHei", sans-serif;
+        color: #1f2937;
+        background: #f9fafb;
+        margin: 0;
+        padding: 30px 0;
+    }}
+    .notice {{
+        max-width: 800px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-radius: 6px;
+    }}
+    .header {{
+        text-align: center;
+        border-bottom: 2px solid #1a365d;
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+    }}
+    .header h1 {{
+        margin: 0;
+        color: #1a365d;
+        font-size: 26px;
+        letter-spacing: 4px;
+    }}
+    .header .sub {{
+        margin-top: 8px;
+        color: #6b7280;
+        font-size: 13px;
+    }}
+    .info-grid {{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 24px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }}
+    .info-item {{
+        display: flex;
+    }}
+    .info-item .label {{
+        color: #6b7280;
+        width: 100px;
+        flex-shrink: 0;
+    }}
+    .info-item .value {{
+        color: #111827;
+        font-weight: 500;
+    }}
+    .total-amount {{
+        background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+        color: #ffffff;
+        padding: 20px 24px;
+        border-radius: 6px;
+        margin: 24px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }}
+    .total-amount .label {{
+        font-size: 15px;
+        opacity: 0.9;
+    }}
+    .total-amount .value {{
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }}
+    .total-amount .value small {{
+        font-size: 14px;
+        opacity: 0.85;
+        margin-left: 8px;
+    }}
+    table {{
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 13px;
+    }}
+    th {{
+        background: #f3f4f6;
+        color: #1f2937;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        text-align: center;
+        font-weight: 600;
+    }}
+    .section-title {{
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a365d;
+        margin-top: 24px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e5e7eb;
+    }}
+    .payment-info {{
+        background: #f8fafc;
+        border-left: 4px solid #1a365d;
+        padding: 16px 20px;
+        margin-top: 20px;
+        font-size: 13px;
+        line-height: 2;
+    }}
+    .payment-info p {{
+        margin: 4px 0;
+    }}
+    .payment-info strong {{
+        color: #1f2937;
+        margin-right: 6px;
+    }}
+    .qr-section {{
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-top: 24px;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 6px;
+        border: 1px dashed #d1d5db;
+    }}
+    .qr-section .qr-code {{
+        width: 140px;
+        height: 140px;
+        background: #ffffff;
+        padding: 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }}
+    .qr-section .qr-code img {{
+        width: 100%;
+        height: 100%;
+        display: block;
+    }}
+    .qr-section .qr-desc {{
+        flex: 1;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #374151;
+    }}
+    .qr-section .qr-desc strong {{
+        color: #1a365d;
+        font-size: 14px;
+    }}
+    .footer {{
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+        text-align: right;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.8;
+    }}
+    .footer .stamp-area {{
+        margin-top: 12px;
+        height: 80px;
+        width: 200px;
+        margin-left: auto;
+        border: 1px dashed #d1d5db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-size: 12px;
+        border-radius: 4px;
+    }}
+    .warning {{
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 12px 16px;
+        margin-top: 20px;
+        font-size: 13px;
+        color: #92400e;
+        border-radius: 4px;
+    }}
+    @media print {{
+        body {{ background: #ffffff; padding: 0; }}
+        .notice {{ box-shadow: none; border-radius: 0; }}
+    }}
+</style>
+</head>
+<body>
+<div class="notice">
+    <div class="header">
+        <h1>诉 讼 费 缴 费 通 知 单</h1>
+        <div class="sub">根据《诉讼费用交纳办法》（国务院令第 481 号）第十三条规定出具</div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item"><span class="label">缴费单号：</span><span class="value">{payment_no}</span></div>
+        <div class="info-item"><span class="label">开具日期：</span><span class="value">{now_str}</span></div>
+        <div class="info-item"><span class="label">案件类型：</span><span class="value">{case_type_label}</span></div>
+        <div class="info-item"><span class="label">缴费期限：</span><span class="value">{due_str}</span></div>
+        <div class="info-item" style="grid-column: span 2;"><span class="label">诉讼标的额：</span><span class="value">{amount_display}</span></div>
+    </div>
+
+    <div class="total-amount">
+        <div class="label">应缴案件受理费合计</div>
+        <div class="value">¥ {fee_yuan:.2f}<small>（{fee_wan:.6f} 万元）</small></div>
+    </div>
+
+    <div class="section-title">费用分段计算明细</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px;">序号</th>
+                <th>计费区间</th>
+                <th style="width: 180px;">计算基数（元）</th>
+                <th style="width: 100px;">费率</th>
+                <th style="width: 120px;">该段费用</th>
+            </tr>
+        </thead>
+        <tbody>{breakdown_rows}</tbody>
+    </table>
+    {notes_html}
+
+    <div class="section-title">收款账户信息</div>
+    <div class="payment-info">
+        <p><strong>收款单位：</strong>{payee}</p>
+        <p><strong>开户银行：</strong>{bank}</p>
+        <p><strong>银行账号：</strong>{account}</p>
+        <p><strong>款项用途：</strong>诉讼费（缴费单号 {payment_no}）</p>
+    </div>
+
+    <div class="qr-section">
+        <div class="qr-code">
+            <img src="data:image/png;base64,{qr_b64}" alt="缴费二维码">
+        </div>
+        <div class="qr-desc">
+            <strong>📱 扫码支付说明</strong><br>
+            扫描左侧二维码，核对缴费单号与金额无误后，即可完成在线支付。<br>
+            二维码已包含：<span style="color: #1a365d;">单号 {payment_no}、金额 ¥{fee_yuan:.2f}、案件类型 {case_type_label}</span><br>
+            支付成功后，请凭银行回单到立案窗口换取财政票据。
+        </div>
+    </div>
+
+    <div class="warning">
+        ⚠️ 重要提示：当事人应当在收到本通知次日起 7 日内交纳诉讼费用。
+        逾期不交纳又不提出缓交、减交、免交申请，或者申请未获批准的，
+        将按自动撤诉处理。本通知一式两份，当事人签收后一份留存。
+    </div>
+
+    <div class="footer">
+        <div>开具单位：人民法院立案庭</div>
+        <div>经办人：____________  联系电话：12368</div>
+        <div class="stamp-area">（法院公章处）</div>
+    </div>
+</div>
+</body>
+</html>'''
+    return html
+
+
+def generate_payment_notice(
+    fee_result: Dict[str, Any],
+    *,
+    output_path: Optional[str] = None,
+    payee: str = '当地人民法院诉讼费专户',
+    bank: str = '中国工商银行 XX 支行',
+    account: str = '1234 5678 9012 3456',
+) -> Dict[str, Any]:
+    if not fee_result or 'fee_yuan' not in fee_result:
+        raise ValueError('无效的诉讼费计算结果')
+
+    payment_no = _generate_payment_no()
+    fee_yuan = fee_result['fee_yuan']
+    case_type_label = fee_result.get('case_type_label', '财产案件')
+    amount_wan = fee_result.get('amount_wan', 0.0)
+    breakdown = fee_result.get('breakdown', [])
+    notes = fee_result.get('notes', [])
+
+    if fee_yuan <= 0:
+        raise ValueError('应缴金额为 0，无需生成缴费通知单')
+
+    qr_payload = _build_qr_payload(payment_no, fee_yuan, case_type_label, amount_wan)
+    qr_b64 = _generate_qr_base64(qr_payload)
+
+    html = _render_html_notice(
+        payment_no=payment_no,
+        case_type_label=case_type_label,
+        amount_wan=amount_wan,
+        fee_yuan=fee_yuan,
+        breakdown=breakdown,
+        notes=notes,
+        qr_b64=qr_b64,
+        payee=payee,
+        bank=bank,
+        account=account,
+    )
+
+    notice_info = {
+        'payment_no': payment_no,
+        'fee_yuan': fee_yuan,
+        'case_type_label': case_type_label,
+        'amount_wan': amount_wan,
+        'qr_payload': qr_payload,
+        'html': html,
+        'file_path': None,
+    }
+
+    if output_path:
+        abs_path = os.path.abspath(output_path)
+        with open(abs_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+        notice_info['file_path'] = abs_path
+
+    return notice_info
+
+
+def _prompt_save_notice(result: Dict[str, Any]) -> None:
+    if result['fee_yuan'] <= 0:
+        return
+    while True:
+        choice = input('是否生成缴费通知单？(y/n)：').strip().lower()
+        if choice in ('n', 'no'):
+            break
+        if choice in ('y', 'yes'):
+            default_name = f'payment_notice_{datetime.now().strftime("%Y%m%d_%H%M%S")}.html'
+            user_name = input(
+                f'请输入保存文件名（默认 {default_name}，回车使用默认）：'
+            ).strip()
+            file_name = user_name if user_name else default_name
+            if not file_name.lower().endswith('.html'):
+                file_name += '.html'
+            try:
+                notice = generate_payment_notice(result, output_path=file_name)
+                print()
+                print(f'✅ 缴费通知单已生成：{notice["file_path"]}')
+                print(f'   缴费单号：{notice["payment_no"]}')
+                print(f'   应缴金额：¥ {notice["fee_yuan"]:.2f}')
+                print(f'   请在浏览器中打开 HTML 文件查看或打印。')
+                print()
+                break
+            except Exception as e:
+                print(f'生成失败：{e}')
+                break
+        else:
+            print('请输入 y 或 n。')
+
+
+def main() -> None:
+    print('=== 诉讼费计算服务（案件受理费）===')
+    print('依据：《诉讼费用交纳办法》（国务院令第481号）第十三条')
+    print()
+
+    case_types = list(CaseType)
+    while True:
+        try:
+            _print_case_menu()
+            raw = input('请输入案件类型编号（输入 q 退出）：').strip()
+            if raw.lower() in ('q', 'quit', 'exit'):
+                print('再见。')
+                break
+            if not raw:
+                continue
+            idx = int(raw) - 1
+            if idx < 0 or idx >= len(case_types):
+                print('编号超出范围，请重试。')
+                continue
+            ct = case_types[idx]
+            handler = INTERACTIVE_HANDLERS[ct]
+            result = handler()
+            print()
+            print(format_result(result))
+            print()
+            if result['fee_yuan'] > 0:
+                _prompt_save_notice(result)
         except ValueError as e:
             print(f'输入错误：{e}')
         except (KeyboardInterrupt, EOFError):

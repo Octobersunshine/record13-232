@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>诉讼费缴费通知单 - FY20260613064721AE53B4</title>
+<style>
+    @page { size: A4; margin: 15mm; }
+    body {
+        font-family: "Microsoft YaHei", "SimHei", sans-serif;
+        color: #1f2937;
+        background: #f9fafb;
+        margin: 0;
+        padding: 30px 0;
+    }
+    .notice {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-radius: 6px;
+    }
+    .header {
+        text-align: center;
+        border-bottom: 2px solid #1a365d;
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+    }
+    .header h1 {
+        margin: 0;
+        color: #1a365d;
+        font-size: 26px;
+        letter-spacing: 4px;
+    }
+    .header .sub {
+        margin-top: 8px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 24px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+    .info-item {
+        display: flex;
+    }
+    .info-item .label {
+        color: #6b7280;
+        width: 100px;
+        flex-shrink: 0;
+    }
+    .info-item .value {
+        color: #111827;
+        font-weight: 500;
+    }
+    .total-amount {
+        background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+        color: #ffffff;
+        padding: 20px 24px;
+        border-radius: 6px;
+        margin: 24px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .total-amount .label {
+        font-size: 15px;
+        opacity: 0.9;
+    }
+    .total-amount .value {
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+    .total-amount .value small {
+        font-size: 14px;
+        opacity: 0.85;
+        margin-left: 8px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 13px;
+    }
+    th {
+        background: #f3f4f6;
+        color: #1f2937;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        text-align: center;
+        font-weight: 600;
+    }
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a365d;
+        margin-top: 24px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .payment-info {
+        background: #f8fafc;
+        border-left: 4px solid #1a365d;
+        padding: 16px 20px;
+        margin-top: 20px;
+        font-size: 13px;
+        line-height: 2;
+    }
+    .payment-info p {
+        margin: 4px 0;
+    }
+    .payment-info strong {
+        color: #1f2937;
+        margin-right: 6px;
+    }
+    .qr-section {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-top: 24px;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 6px;
+        border: 1px dashed #d1d5db;
+    }
+    .qr-section .qr-code {
+        width: 140px;
+        height: 140px;
+        background: #ffffff;
+        padding: 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+    .qr-section .qr-code img {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    .qr-section .qr-desc {
+        flex: 1;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #374151;
+    }
+    .qr-section .qr-desc strong {
+        color: #1a365d;
+        font-size: 14px;
+    }
+    .footer {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+        text-align: right;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+    .footer .stamp-area {
+        margin-top: 12px;
+        height: 80px;
+        width: 200px;
+        margin-left: auto;
+        border: 1px dashed #d1d5db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-size: 12px;
+        border-radius: 4px;
+    }
+    .warning {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 12px 16px;
+        margin-top: 20px;
+        font-size: 13px;
+        color: #92400e;
+        border-radius: 4px;
+    }
+    @media print {
+        body { background: #ffffff; padding: 0; }
+        .notice { box-shadow: none; border-radius: 0; }
+    }
+</style>
+</head>
+<body>
+<div class="notice">
+    <div class="header">
+        <h1>诉 讼 费 缴 费 通 知 单</h1>
+        <div class="sub">根据《诉讼费用交纳办法》（国务院令第 481 号）第十三条规定出具</div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item"><span class="label">缴费单号：</span><span class="value">FY20260613064721AE53B4</span></div>
+        <div class="info-item"><span class="label">开具日期：</span><span class="value">2026 年 06 月 13 日</span></div>
+        <div class="info-item"><span class="label">案件类型：</span><span class="value">财产案件</span></div>
+        <div class="info-item"><span class="label">缴费期限：</span><span class="value">2026 年 06 月 13 日起 7 日内</span></div>
+        <div class="info-item" style="grid-column: span 2;"><span class="label">诉讼标的额：</span><span class="value">123.45 万元（¥ 1234500.00 元）</span></div>
+    </div>
+
+    <div class="total-amount">
+        <div class="label">应缴案件受理费合计</div>
+        <div class="value">¥ 15910.50<small>（1.591050 万元）</small></div>
+    </div>
+
+    <div class="section-title">费用分段计算明细</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px;">序号</th>
+                <th>计费区间</th>
+                <th style="width: 180px;">计算基数（元）</th>
+                <th style="width: 100px;">费率</th>
+                <th style="width: 120px;">该段费用</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">1</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: left;">不超过1万元</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">- ~ 10000.00</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">50元/件</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: right;">¥ 50.00</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">2</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: left;">超过1万元至10万元</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">10000.00 ~ 100000.00</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">2.5%</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: right;">¥ 2250.00</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">3</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: left;">超过10万元至20万元</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">100000.00 ~ 200000.00</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">2.0%</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: right;">¥ 2000.00</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">4</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: left;">超过20万元至50万元</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">200000.00 ~ 500000.00</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">1.5%</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: right;">¥ 4500.00</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">5</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: left;">超过50万元至100万元</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">500000.00 ~ 1000000.00</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">1.0%</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: right;">¥ 5000.00</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">6</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: left;">超过100万元至200万元</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">1000000.00 ~ 1234500.00</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: center;">0.9%</td>
+            <td style="padding: 8px 12px; border: 1px solid #d1d5db; text-align: right;">¥ 2110.50</td>
+        </tr></tbody>
+    </table>
+    
+
+    <div class="section-title">收款账户信息</div>
+    <div class="payment-info">
+        <p><strong>收款单位：</strong>北京市朝阳区人民法院诉讼费专户</p>
+        <p><strong>开户银行：</strong>中国工商银行北京朝阳支行</p>
+        <p><strong>银行账号：</strong>0200 0000 1234 5678 9012</p>
+        <p><strong>款项用途：</strong>诉讼费（缴费单号 FY20260613064721AE53B4）</p>
+    </div>
+
+    <div class="qr-section">
+        <div class="qr-code">
+            <img src="data:image/png;base64,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" alt="缴费二维码">
+        </div>
+        <div class="qr-desc">
+            <strong>📱 扫码支付说明</strong><br>
+            扫描左侧二维码，核对缴费单号与金额无误后，即可完成在线支付。<br>
+            二维码已包含：<span style="color: #1a365d;">单号 FY20260613064721AE53B4、金额 ¥15910.50、案件类型 财产案件</span><br>
+            支付成功后，请凭银行回单到立案窗口换取财政票据。
+        </div>
+    </div>
+
+    <div class="warning">
+        ⚠️ 重要提示：当事人应当在收到本通知次日起 7 日内交纳诉讼费用。
+        逾期不交纳又不提出缓交、减交、免交申请，或者申请未获批准的，
+        将按自动撤诉处理。本通知一式两份，当事人签收后一份留存。
+    </div>
+
+    <div class="footer">
+        <div>开具单位：人民法院立案庭</div>
+        <div>经办人：____________  联系电话：12368</div>
+        <div class="stamp-area">（法院公章处）</div>
+    </div>
+</div>
+</body>
+</html>
